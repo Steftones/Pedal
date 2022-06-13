@@ -4,12 +4,6 @@ s.meter;
 s.options.memSize = 2.pow(20);
 Server.killAll;
 
-ServerOptions.devices;
-ServerOptions.outDevices;
-Server.default.options.outDevice_("MacBook Pro Speakers");
-
-// make it so you can switch between demo and sound in through focusrite
-
 // ----- send below -----
 (
 
