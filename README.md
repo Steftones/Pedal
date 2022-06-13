@@ -1,2 +1,2 @@
-# pedal
-Guitar effects pedal
+# Pedal
+Guitar effects pedal with SuperCollider
