@@ -114,4 +114,6 @@ p.add(
 	])
 );
 
+~readPreset.value(\Flanger);
+
 "Flanger pedal loaded".postln;

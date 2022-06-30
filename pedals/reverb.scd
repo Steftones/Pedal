@@ -58,8 +58,18 @@ p.add(
 				\popup1State, 1,
 				\popup2State, 1
 			]),
+			Dictionary.newFrom([
+				\name, "ZoigVerb",
+				\knobValues, [0.2, 0.5, 0, 0.2, 900, 1, 0, 0],
+				\button1State, 0,
+				\button2State, 0,
+				\popup1State, 1,
+				\popup2State, 1
+			]),
 		]
 	])
 );
+
+~readPreset.value(\Reverb);
 
 "Reverb pedal loaded".postln;

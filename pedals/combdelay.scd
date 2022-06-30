@@ -87,4 +87,6 @@ p.add(
 	])
 );
 
+~readPreset.value(\CombDelay);
+
 "Comb delay pedal loaded".postln;

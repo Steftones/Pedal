@@ -7,6 +7,13 @@ Server.killAll;
 // ----- send below -----
 (
 
+~numberOfFactoryPresets = 3;
+
+~folderPath = PathName(thisProcess.nowExecutingPath).parentPath;
+
+// imports
+(~folderPath ++ 'utils/crud.scd').load;
+
 // sound input synth
 SynthDef.new(\soundIn, {
 	// default in of 1
@@ -31,13 +38,34 @@ p = Dictionary.new();
 
 // load pedal files
 ~path = ~folderPath ++ "pedals/";
-PathName(~path).entries.do{
-	arg pedalFilePath;
-	pedalFilePath.fullPath.load;
-};
+PathName(~path).entries.do{ |pedalFilePath| pedalFilePath.fullPath.load; };
 
 // current pedal, defaults to the flanger pedal
 ~currentPedal = 'Flanger';
+
+~saveNewButton = Button.new(w)
+.states_([["Save new"]])
+.action_({
+	~createNameWindow.value(nameToDisplay: "");
+});
+
+~saveEditButton = Button.new(w)
+.states_([["Save edit"]])
+.action_({
+	~updatePreset.value(~pedalFilePopup.item, ~presetPopUp.value);
+});
+
+~renameButton = Button.new(w)
+.states_([["Rename"]])
+.action_({
+	~createNameWindow.value(~presetPopUp.item, isRename: true);
+});
+
+~deleteButton = Button.new(w)
+.states_([["Delete"]])
+.action_({
+	~deletePreset.value(~pedalFilePopup.item, ~presetPopUp.value);
+});
 
 ~audioInputPopUp = PopUpMenu(w)
 .items_(['Demo sound'] ++ ServerOptions.devices)
@@ -48,9 +76,9 @@ PathName(~path).entries.do{
 			\isDemo, 0,
 			\buf, ~demoSound
 		)
-	}, {
-		s.options.inDevice = menu.item;
-		~inputSynth.set(\isDemo, 1);
+		}, {
+			s.options.inDevice = menu.item;
+			~inputSynth.set(\isDemo, 1);
 	});
 });
 
@@ -223,7 +251,54 @@ p[~currentPedal][\activeText].do({
 	}
 );
 
-// UI
+// ----- UI -----
+
+~createNameWindow = {
+	arg nameToDisplay = "", isRename;
+	var saveButton, exitButton, nameWindow, textField;
+
+	textField = TextField.new(w).value_(nameToDisplay);
+
+	saveButton = Button.new(w)
+	.states_([["Save"]])
+	.action_({
+		~pedalFilePopup.item.postln;
+		isRename.postln;
+		(isRename == true).if({
+			~updatePreset.value(~pedalFilePopup.item, ~presetPopUp.value, textField.value);
+			}, {
+				~createPreset.value(~pedalFilePopup.item, textField.value);
+		});
+		nameWindow.visible_(false);
+	});
+
+	exitButton = Button.new(w)
+	.states_([["Exit"]])
+	.action_({
+		nameWindow.visible_(false);
+	});
+
+	nameWindow = Window.new(
+		name: "Name Preset",
+		bounds: Rect(200,200,200,200),
+		resizable: true
+	)
+	.front
+	.alwaysOnTop_(true)
+	.visible_(true)
+	.layout_(
+		VLayout(
+			HLayout(StaticText(w), StaticText(w).string_("Enter name"), StaticText(w)),
+			textField,
+			saveButton,
+			exitButton,
+		);
+	);
+
+	nameWindow;
+};
+
+// main window
 w = Window.new(
 	name: "Pedal",
 	bounds: Rect(300,300,500,300),
@@ -233,8 +308,8 @@ w = Window.new(
 .alwaysOnTop_(true)
 .layout_(
 	VLayout(
-		HLayout(StaticText(w), StaticText(w), ~audioInputPopUp),
-		HLayout(StaticText(w), StaticText(w), ~pedalFilePopup),
+		HLayout(~saveNewButton, ~saveEditButton, StaticText(w), ~audioInputPopUp),
+		HLayout(~renameButton, ~deleteButton, StaticText(w), StaticText(w), ~pedalFilePopup),
 		HLayout(StaticText(w), StaticText(w), StaticText(w)),
 		HLayout(StaticText(w), ~pedalName, StaticText(w)),
 		HLayout(StaticText(w)),
