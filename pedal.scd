@@ -3,6 +3,8 @@ s.plotTree;
 s.meter;
 s.options.memSize = 2.pow(20);
 Server.killAll;
+s.reboot;
+s.makeWindow;
 
 // ----- send below -----
 (
@@ -13,11 +15,12 @@ Server.killAll;
 
 // imports
 (~folderPath ++ 'utils/crud.scd').load;
+(~folderPath ++ 'utils/midi.scd').load;
 
 // sound input synth
 SynthDef.new(\soundIn, {
 	// default in of 1
-	arg in = 1, buf = 0, rate = 1, knob0 = 0.2, out = 0, isDemo = 0;
+	arg in = 1, buf = 0, rate = 1, knob0 = 0.2, out = 0, isDemo = 0, isMuted = nil;
 	var sig;
 	sig = SelectX.ar(
 		isDemo,
@@ -26,7 +29,7 @@ SynthDef.new(\soundIn, {
 			SoundIn.ar(in ! 2),
 		]
 	);
-	sig = sig * knob0;
+	sig = sig * isMuted.if(0, knob0);
 	Out.ar(out, sig);
 }).add;
 
@@ -38,7 +41,11 @@ p = Dictionary.new();
 
 // load pedal files
 ~path = ~folderPath ++ "pedals/";
-PathName(~path).entries.do{ |pedalFilePath| pedalFilePath.fullPath.load; };
+PathName(~path).entries.do{
+	|pedalFilePath|
+	pedalFilePath.fullPath.load;
+	"loaded %".format(pedalFilePath);
+};
 
 // current pedal, defaults to the flanger pedal
 ~currentPedal = 'Flanger';
@@ -83,12 +90,7 @@ PathName(~path).entries.do{ |pedalFilePath| pedalFilePath.fullPath.load; };
 });
 
 ~setPresets = {
-	var allPresets = [];
-	p[~currentPedal][\pedalPresets].do({
-		arg preset;
-		allPresets = allPresets ++ [preset[\name]];
-	});
-	allPresets;
+	p[~currentPedal][\pedalPresets].collect({ |preset| preset[\name] });
 };
 
 ~setEffectSynth = {
@@ -113,14 +115,12 @@ PathName(~path).entries.do{ |pedalFilePath| pedalFilePath.fullPath.load; };
 	~toggle2PopUp.value_(preset[\popup2State]);
 };
 
-~pedalFilePopup = PopUpMenu(w)
-.items_(['Audio muted'] ++ p.keys.asArray)
-.action_({
+
+~pedalFilePopupFunction = {
 	arg menu;
-	var firstPreset;
 
 	if (menu.item == 'Audio muted', ~inputSynth.set(\knob0, 0), {
-		firstPreset = p[menu.item][\pedalPresets][0];
+		var firstPreset = p[menu.item][\pedalPresets][0];
 
 		// free synths
 		~inputSynth.free;
@@ -168,8 +168,16 @@ PathName(~path).entries.do{ |pedalFilePath| pedalFilePath.fullPath.load; };
 		// set presets
 		~presetPopUp.items_(~setPresets.value);
 
+		// set color
+		w.background_(p[~currentPedal][\color])
+
 	});
-});
+};
+
+~pedalFilePopup = PopUpMenu(w)
+.items_(['Audio muted'] ++ p.keys.asArray)
+.action_({~pedalFilePopupFunction.value(~pedalFilePopup)});
+
 
 ~presetPopUp = PopUpMenu(w)
 .items_(~allPresets)
@@ -221,11 +229,7 @@ PathName(~path).entries.do{ |pedalFilePath| pedalFilePath.fullPath.load; };
 .align_(\center)
 .font_(Font("Monaco", 30));
 
-~arrayOfText = [];
-p[~currentPedal][\activeText].do({
-	arg item, i;
-	~arrayOfText = ~arrayOfText ++ StaticText.new(w).string_(item).align_(\center);
-});
+~arrayOfText = p[~currentPedal][\activeText].collect({ |item| StaticText.new(w).string_(item).align_(\center) });
 
 ~knobAction = {
 	arg value, toSet, spec, synthDefToSet;
@@ -305,6 +309,7 @@ w = Window.new(
 	resizable: true
 )
 .front
+.background_(Color.new(red: 1.0, alpha: 0.3))
 .alwaysOnTop_(true)
 .layout_(
 	VLayout(

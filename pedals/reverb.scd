@@ -17,6 +17,7 @@ p.add(
 		\activeText, [
 			"Gain", "Rev time", "Pre delay","Rev decay", "Damping", "Mix", "-", "-", "-", "-",
 		],
+		\color, Color.new(green: 1, alpha: 0.2),
 		\synthDefHere, SynthDef("Reverb", {
 			arg in, out = 0, knob1, knob2, knob3, knob4, knob5;
 			var dry, temp, signal, wet;
@@ -33,11 +34,12 @@ p.add(
 			temp = In.ar(0, 2);
 			wet = 0;
 			temp = DelayN.ar(temp, 0.2, preDelay);
-			18.do{
-				temp = AllpassN.ar(temp, 0.05, {Rand(0.001, delayTime)} ! 2, revDecay);
+			18.do({
+				temp = AllpassN.ar(temp, 0.05, { Rand(0.001, delayTime) } ! 2, revDecay);
 				temp = LPF.ar(temp, damping);
 				wet = wet + temp;
-			};
+			});
+			wet = LeakDC.ar(wet);
 			signal = XFade2.ar(dry, wet, mix * 2 - 1);
 			Out.ar(out, signal);
 		}).add,
@@ -71,5 +73,3 @@ p.add(
 );
 
 ~readPreset.value(\Reverb);
-
-"Reverb pedal loaded".postln;

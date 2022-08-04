@@ -17,6 +17,7 @@ p.add(
 		\activeText, [
 			"Gain", "Wet", "Min delay", "Max delay", "Decay time", "-", "Delay LFO", "Decay LFO", "Frequency", "Frequency",
 		],
+    \color, Color.new(blue: 1.0, alpha: 0.3),
 		\synthDefHere, SynthDef('CombDelay', {
 			arg out = 0, knob1, knob2, knob3, knob4, knob6, knob7,
 			lfo1Options, lfo2Options, isLfo1On, isLfo2On;
@@ -55,6 +56,7 @@ p.add(
 				decayTime * if (isLfo2On, lfo2, 1),
 				mul: 3
 			);
+      delay = LeakDC.ar(delay);
 			signal = XFade2.ar(signal, (delay * wet));
 			Out.ar(out, signal);
 		}).add,
@@ -88,5 +90,3 @@ p.add(
 );
 
 ~readPreset.value(\CombDelay);
-
-"Comb delay pedal loaded".postln;

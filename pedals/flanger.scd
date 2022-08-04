@@ -18,6 +18,7 @@ p.add(
 		\activeText, [
 			"Gain", "Wet", "Depth", "Feedback", "Min delay", "Max delay", "LFO 1", "LFO 2", "Frequency", "Frequency",
 		],
+		\color, Color.new(red: 1.0, alpha: 0.3),
 		\synthDefHere, SynthDef('Flanger', {
 			arg in, out = 0, knob1, knob2, knob3, knob4, knob5, knob6, knob7,
 			lfo1Options, lfo2Options, isLfo1On, isLfo2On;
@@ -80,7 +81,7 @@ p.add(
 				),
 			);
 			LocalOut.ar(effect * feedback);
-
+      effect = LeakDC.ar(effect);
 			signal = XFade2.ar(dry, (effect * feedback) * wet);
 			Out.ar(out, signal);
 
@@ -115,5 +116,3 @@ p.add(
 );
 
 ~readPreset.value(\Flanger);
-
-"Flanger pedal loaded".postln;

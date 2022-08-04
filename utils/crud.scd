@@ -50,9 +50,9 @@
 	var path, tempAllPresets;
 	# path, tempAllPresets = ~getPathAndPresets.value(effect);
 
-	(tempAllPresets != nil).if({
+	tempAllPresets !? {
 		p[effect][\pedalPresets] = p[effect][\pedalPresets] ++ tempAllPresets;
-	});
+	};
 };
 
 ~updatePreset = {
@@ -61,21 +61,21 @@
 	# path, tempAllPresets = ~getPathAndPresets.value(effect);
 
 	// all pedals have the a number of factory presets that can't be deleted
-	(presetIndex > (~numberOfFactoryPresets - 1)).if({
+	(presetIndex > (~numberOfFactoryPresets - 1)) !? {
 
 		newPreset = ~makePresetDictionary.value;
 
-		(newPresetName != nil).if({
+		newPresetName !? {
 			newPreset[\name] = newPresetName;
 			presetPopUpItems.value[presetIndex] = newPresetName;
 			~presetPopUp.items_(presetPopUpItems);
-		});
+		};
 
 		p[effect][\pedalPresets][presetIndex] = newPreset;
 		tempAllPresets[presetIndex - (~numberOfFactoryPresets)] = newPreset;
 
 		tempAllPresets.writeArchive(path);
-	});
+	};
 };
 
 ~deletePreset = {
@@ -83,7 +83,7 @@
 	var path, tempAllPresets, presetPopUpItems = ~setPresets.value;
 	# path, tempAllPresets = ~getPathAndPresets.value(effect);
 
-	(presetIndex > (~numberOfFactoryPresets - 1)).if({
+	(presetIndex > (~numberOfFactoryPresets - 1)) !? {
 		p[effect][\pedalPresets].removeAt(presetIndex);
 		tempAllPresets.removeAt(presetIndex - (~numberOfFactoryPresets));
 
@@ -91,6 +91,6 @@
 		~presetPopUp.items_(presetPopUpItems);
 
 		tempAllPresets.writeArchive(path);
-	});
+	};
 
 };
