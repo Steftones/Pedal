@@ -9,4 +9,5 @@ To create your own effect, copy an existing effect file in the `/pedals` directo
 - Create, read, update and delete effect presets
 - MIDI control of effect parameters (see `/utils/midi.scd`)
 
+
 <img width="472" alt="Screenshot 2022-09-19 at 17 21 21" src="https://user-images.githubusercontent.com/68643643/191065591-582c674b-9d4f-4ede-a7a8-6bceb150329f.png">
